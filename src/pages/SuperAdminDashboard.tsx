@@ -30,6 +30,9 @@ export default function SuperAdminDashboard() {
 
   useEffect(() => {
     setTenants(ITSLocalStorageDB.getTenants());
+    return ITSLocalStorageDB.subscribe(() => {
+      setTenants(ITSLocalStorageDB.getTenants());
+    });
   }, []);
 
   const handleRegisterTenant = (e: React.FormEvent) => {

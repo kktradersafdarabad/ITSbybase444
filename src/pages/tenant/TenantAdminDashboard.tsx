@@ -52,6 +52,15 @@ export default function TenantAdminDashboard() {
       setTenant(t);
       reload_all_lists(t.id);
     }
+
+    // Subscribe to dynamic cloud-persisted state updates
+    return ITSLocalStorageDB.subscribe(() => {
+      const updatedT = ITSLocalStorageDB.getTenantBySlug(activeSlug);
+      if (updatedT) {
+        setTenant(updatedT);
+        reload_all_lists(updatedT.id);
+      }
+    });
   }, [activeSlug]);
 
   const reload_all_lists = (tenantId: string) => {

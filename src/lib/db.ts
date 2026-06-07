@@ -2,8 +2,66 @@ import {
   Tenant, Vehicle, Driver, TenantBooking, 
   Route, PromoCode, DriverLocation, Review 
 } from '../types';
+import { db, auth } from './firebase';
+import { 
+  collection, 
+  doc, 
+  setDoc, 
+  deleteDoc,
+  getDocs, 
+  onSnapshot 
+} from 'firebase/firestore';
 
-// Let's create beautiful seeds for the platform
+// Operation Types as defined by rules
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  }
+}
+
+// Error Handler callback conform to requirements
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid || null,
+      email: auth.currentUser?.email || null,
+      emailVerified: auth.currentUser?.emailVerified || null,
+      isAnonymous: auth.currentUser?.isAnonymous || null,
+      tenantId: auth.currentUser?.tenantId || null,
+      providerInfo: auth.currentUser?.providerData?.map(provider => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
+
+// Beautiful initial seeds
 const SEED_TENANTS: Tenant[] = [
   {
     id: 't-elite-ride',
@@ -20,7 +78,7 @@ const SEED_TENANTS: Tenant[] = [
     last_payment_date: '2026-05-15',
     next_payment_date: '2026-06-15',
     payment_status: 'paid',
-    primary_color: '#C91C14', // Vibrant Red
+    primary_color: '#C91C14',
     currency: 'USD',
     currency_symbol: '$',
     base_fare: 15,
@@ -56,7 +114,7 @@ const SEED_TENANTS: Tenant[] = [
     last_payment_date: '2026-06-01',
     next_payment_date: '2026-07-01',
     payment_status: 'paid',
-    primary_color: '#2563EB', // Electric Blue
+    primary_color: '#2563EB',
     currency: 'PKR',
     currency_symbol: 'Rs.',
     base_fare: 150,
@@ -91,7 +149,7 @@ const SEED_TENANTS: Tenant[] = [
     last_payment_date: '2026-05-10',
     next_payment_date: '2026-06-10',
     payment_status: 'paid',
-    primary_color: '#D97706', // Golden Amber
+    primary_color: '#D97706',
     currency: 'CHF',
     currency_symbol: 'CHF',
     base_fare: 20,
@@ -111,7 +169,6 @@ const SEED_TENANTS: Tenant[] = [
 ];
 
 const SEED_VEHICLES: Vehicle[] = [
-  // vehicles for Elite Ride (t-elite-ride)
   {
     id: 'v-101',
     tenant_id: 't-elite-ride',
@@ -144,7 +201,6 @@ const SEED_VEHICLES: Vehicle[] = [
     image_url: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&q=80&w=400',
     features: ['Extra Large Boot Space', 'All-Wheel Drive', 'USB-C Charging Outlets']
   },
-  // vehicles for Safari Transit (t-safari-transit)
   {
     id: 'v-201',
     tenant_id: 't-safari-transit',
@@ -196,7 +252,6 @@ const SEED_VEHICLES: Vehicle[] = [
 ];
 
 const SEED_DRIVERS: Driver[] = [
-  // Drivers for Elite Ride (t-elite-ride)
   {
     id: 'dr-101',
     tenant_id: 't-elite-ride',
@@ -227,7 +282,6 @@ const SEED_DRIVERS: Driver[] = [
     total_earnings: 28410,
     commission_percent: 80
   },
-  // Drivers for Safari Transit (t-safari-transit)
   {
     id: 'dr-201',
     tenant_id: 't-safari-transit',
@@ -411,8 +465,8 @@ const SEED_BOOKINGS: TenantBooking[] = [
     special_requests: 'Private security clearance verified.',
     base_fare: 20,
     distance_charge: 0,
-    time_charge: 320, // 4 hours * 80
-    discount_amount: 10, // WELCOME10
+    time_charge: 320,
+    discount_amount: 10,
     total_fare: 330,
     payment_method: 'credit_card',
     payment_status: 'paid',
@@ -475,7 +529,7 @@ const SEED_LOCATIONS: DriverLocation[] = [
     driver_id: 'dr-101',
     booking_id: 'b-001',
     tenant_slug: 'elite-ride',
-    lat: 51.4700, // Heathrow
+    lat: 51.4700,
     lng: -0.4543,
     heading: 90,
     is_active: false
@@ -485,7 +539,7 @@ const SEED_LOCATIONS: DriverLocation[] = [
     driver_id: 'dr-102',
     booking_id: 'b-002',
     tenant_slug: 'elite-ride',
-    lat: 51.5074, // Mayfair / Central London
+    lat: 51.5074,
     lng: -0.1278,
     heading: 180,
     is_active: true
@@ -495,14 +549,14 @@ const SEED_LOCATIONS: DriverLocation[] = [
     driver_id: 'dr-201',
     booking_id: 'b-003',
     tenant_slug: 'safari-transit',
-    lat: 32.5085, // Sialkot
+    lat: 32.5085,
     lng: 74.5204,
     heading: 270,
     is_active: true
   }
 ];
 
-// Helper to access and manipulate local database state
+// Helper to access and manipulate client/cloud states
 export class ITSLocalStorageDB {
   private static initKey(key: string, defaultValue: any) {
     if (!localStorage.getItem(key)) {
@@ -510,7 +564,9 @@ export class ITSLocalStorageDB {
     }
   }
 
+  // Set up synchronization and background seeding
   static initialize() {
+    // Initialise fallback states first
     this.initKey('its_tenants', SEED_TENANTS);
     this.initKey('its_vehicles', SEED_VEHICLES);
     this.initKey('its_drivers', SEED_DRIVERS);
@@ -519,11 +575,98 @@ export class ITSLocalStorageDB {
     this.initKey('its_bookings', SEED_BOOKINGS);
     this.initKey('its_reviews', SEED_REVIEWS);
     this.initKey('its_locations', SEED_LOCATIONS);
+
+    // Boot background sync listeners & seeding
+    this.seedFirestoreAndBootSync();
+  }
+
+  private static async seedFirestoreAndBootSync() {
+    try {
+      // Check if tenants database on Firestore is empty
+      const tSnap = await getDocs(collection(db, 'tenants')).catch(err => {
+        handleFirestoreError(err, OperationType.LIST, 'tenants');
+        return null;
+      });
+
+      if (tSnap && tSnap.empty) {
+        console.log('⚡ Firestore database is unseeded. Populating original whitelabel presets...');
+        
+        // Populate collections securely
+        for (const t of SEED_TENANTS) {
+          await setDoc(doc(db, 'tenants', t.id), t).catch(err => handleFirestoreError(err, OperationType.WRITE, `tenants/${t.id}`));
+        }
+        for (const v of SEED_VEHICLES) {
+          await setDoc(doc(db, 'vehicles', v.id), v).catch(err => handleFirestoreError(err, OperationType.WRITE, `vehicles/${v.id}`));
+        }
+        for (const d of SEED_DRIVERS) {
+          await setDoc(doc(db, 'drivers', d.id), d).catch(err => handleFirestoreError(err, OperationType.WRITE, `drivers/${d.id}`));
+        }
+        for (const p of SEED_PROMOS) {
+          await setDoc(doc(db, 'promos', p.id), p).catch(err => handleFirestoreError(err, OperationType.WRITE, `promos/${p.id}`));
+        }
+        for (const r of SEED_ROUTES) {
+          await setDoc(doc(db, 'routes', r.id), r).catch(err => handleFirestoreError(err, OperationType.WRITE, `routes/${r.id}`));
+        }
+        for (const b of SEED_BOOKINGS) {
+          await setDoc(doc(db, 'bookings', b.id), b).catch(err => handleFirestoreError(err, OperationType.WRITE, `bookings/${b.id}`));
+        }
+        for (const r of SEED_REVIEWS) {
+          await setDoc(doc(db, 'reviews', r.id), r).catch(err => handleFirestoreError(err, OperationType.WRITE, `reviews/${r.id}`));
+        }
+        for (const l of SEED_LOCATIONS) {
+          await setDoc(doc(db, 'locations', l.id), l).catch(err => handleFirestoreError(err, OperationType.WRITE, `locations/${l.id}`));
+        }
+        console.log('👑 Seeding completed successfully.');
+      }
+    } catch (error) {
+      console.warn('Silent seeding error ignored (rules/offline protection schema):', error);
+    }
+
+    // Connect real-time listeners for instant cross-tab updates
+    this.startRealtimeListeners();
+  }
+
+  private static startRealtimeListeners() {
+    const listConfig = [
+      { path: 'tenants', localKey: 'its_tenants' },
+      { path: 'vehicles', localKey: 'its_vehicles' },
+      { path: 'drivers', localKey: 'its_drivers' },
+      { path: 'bookings', localKey: 'its_bookings' },
+      { path: 'routes', localKey: 'its_routes' },
+      { path: 'promos', localKey: 'its_promos' },
+      { path: 'locations', localKey: 'its_locations' },
+      { path: 'reviews', localKey: 'its_reviews' }
+    ];
+
+    listConfig.forEach(({ path, localKey }) => {
+      onSnapshot(collection(db, path), (snap) => {
+        const items: any[] = [];
+        snap.forEach(docSnap => {
+          items.push(docSnap.data());
+        });
+        if (items.length > 0) {
+          localStorage.setItem(localKey, JSON.stringify(items));
+          // Dispatch events so components reload automatically
+          window.dispatchEvent(new Event('storage'));
+          window.dispatchEvent(new CustomEvent('its-db-update', { detail: { path } }));
+        }
+      }, (err) => {
+        console.warn(`Snapshot subscription blocked or offline for path ${path}:`, err.message);
+      });
+    });
+  }
+
+  static subscribe(callback: () => void): () => void {
+    window.addEventListener('its-db-update', callback);
+    window.addEventListener('storage', callback);
+    return () => {
+      window.removeEventListener('its-db-update', callback);
+      window.removeEventListener('storage', callback);
+    };
   }
 
   // --- QUERY APIS ---
   static getTenants(): Tenant[] {
-    this.initialize();
     return JSON.parse(localStorage.getItem('its_tenants') || '[]');
   }
 
@@ -532,6 +675,7 @@ export class ITSLocalStorageDB {
   }
 
   static saveTenant(tenant: Tenant): void {
+    // Write locally for immediate rendering response
     const tenants = this.getTenants();
     const idx = tenants.findIndex(t => t.id === tenant.id);
     if (idx !== -1) {
@@ -540,16 +684,23 @@ export class ITSLocalStorageDB {
       tenants.push(tenant);
     }
     localStorage.setItem('its_tenants', JSON.stringify(tenants));
+
+    // Upload to Firestore in the background
+    setDoc(doc(db, 'tenants', tenant.id), tenant)
+      .catch((err) => handleFirestoreError(err, OperationType.WRITE, `tenants/${tenant.id}`));
   }
 
   static deleteTenant(id: string): void {
     const tenants = this.getTenants().filter(t => t.id !== id);
     localStorage.setItem('its_tenants', JSON.stringify(tenants));
+
+    // Delete in background
+    deleteDoc(doc(db, 'tenants', id))
+      .catch((err) => handleFirestoreError(err, OperationType.DELETE, `tenants/${id}`));
   }
 
   // Vehicles
   static getVehicles(tenantId?: string): Vehicle[] {
-    this.initialize();
     const all = JSON.parse(localStorage.getItem('its_vehicles') || '[]');
     return tenantId ? all.filter((v: Vehicle) => v.tenant_id === tenantId) : all;
   }
@@ -563,16 +714,21 @@ export class ITSLocalStorageDB {
       all.push(vehicle);
     }
     localStorage.setItem('its_vehicles', JSON.stringify(all));
+
+    setDoc(doc(db, 'vehicles', vehicle.id), vehicle)
+      .catch((err) => handleFirestoreError(err, OperationType.WRITE, `vehicles/${vehicle.id}`));
   }
 
   static deleteVehicle(id: string): void {
     const all = this.getVehicles().filter(v => v.id !== id);
     localStorage.setItem('its_vehicles', JSON.stringify(all));
+
+    deleteDoc(doc(db, 'vehicles', id))
+      .catch((err) => handleFirestoreError(err, OperationType.DELETE, `vehicles/${id}`));
   }
 
   // Drivers
   static getDrivers(tenantId?: string): Driver[] {
-    this.initialize();
     const all = JSON.parse(localStorage.getItem('its_drivers') || '[]');
     return tenantId ? all.filter((d: Driver) => d.tenant_id === tenantId) : all;
   }
@@ -586,16 +742,21 @@ export class ITSLocalStorageDB {
       all.push(driver);
     }
     localStorage.setItem('its_drivers', JSON.stringify(all));
+
+    setDoc(doc(db, 'drivers', driver.id), driver)
+      .catch((err) => handleFirestoreError(err, OperationType.WRITE, `drivers/${driver.id}`));
   }
 
   static deleteDriver(id: string): void {
     const all = this.getDrivers().filter(d => d.id !== id);
     localStorage.setItem('its_drivers', JSON.stringify(all));
+
+    deleteDoc(doc(db, 'drivers', id))
+      .catch((err) => handleFirestoreError(err, OperationType.DELETE, `drivers/${id}`));
   }
 
   // Bookings
   static getBookings(tenantId?: string): TenantBooking[] {
-    this.initialize();
     const all = JSON.parse(localStorage.getItem('its_bookings') || '[]');
     return tenantId ? all.filter((b: TenantBooking) => b.tenant_id === tenantId) : all;
   }
@@ -613,11 +774,13 @@ export class ITSLocalStorageDB {
       all.push(booking);
     }
     localStorage.setItem('its_bookings', JSON.stringify(all));
+
+    setDoc(doc(db, 'bookings', booking.id), booking)
+      .catch((err) => handleFirestoreError(err, OperationType.WRITE, `bookings/${booking.id}`));
   }
 
   // Routes
   static getRoutes(tenantId?: string): Route[] {
-    this.initialize();
     const all = JSON.parse(localStorage.getItem('its_routes') || '[]');
     return tenantId ? all.filter((r: Route) => r.tenant_id === tenantId) : all;
   }
@@ -631,16 +794,21 @@ export class ITSLocalStorageDB {
       all.push(route);
     }
     localStorage.setItem('its_routes', JSON.stringify(all));
+
+    setDoc(doc(db, 'routes', route.id), route)
+      .catch((err) => handleFirestoreError(err, OperationType.WRITE, `routes/${route.id}`));
   }
 
   static deleteRoute(id: string): void {
     const all = this.getRoutes().filter(r => r.id !== id);
     localStorage.setItem('its_routes', JSON.stringify(all));
+
+    deleteDoc(doc(db, 'routes', id))
+      .catch((err) => handleFirestoreError(err, OperationType.DELETE, `routes/${id}`));
   }
 
   // Promo Codes
   static getPromos(tenantId?: string): PromoCode[] {
-    this.initialize();
     const all = JSON.parse(localStorage.getItem('its_promos') || '[]');
     return tenantId ? all.filter((p: PromoCode) => p.tenant_id === tenantId) : all;
   }
@@ -654,16 +822,21 @@ export class ITSLocalStorageDB {
       all.push(promo);
     }
     localStorage.setItem('its_promos', JSON.stringify(all));
+
+    setDoc(doc(db, 'promos', promo.id), promo)
+      .catch((err) => handleFirestoreError(err, OperationType.WRITE, `promos/${promo.id}`));
   }
 
   static deletePromo(id: string): void {
     const all = this.getPromos().filter(p => p.id !== id);
     localStorage.setItem('its_promos', JSON.stringify(all));
+
+    deleteDoc(doc(db, 'promos', id))
+      .catch((err) => handleFirestoreError(err, OperationType.DELETE, `promos/${id}`));
   }
 
   // Locations (Driver GPS Simulators)
   static getLocations(): DriverLocation[] {
-    this.initialize();
     return JSON.parse(localStorage.getItem('its_locations') || '[]');
   }
 
@@ -674,17 +847,22 @@ export class ITSLocalStorageDB {
   static updateDriverLocation(driverId: string, lat: number, lng: number, is_active = true) {
     const all = this.getLocations();
     const idx = all.findIndex(l => l.driver_id === driverId);
+    let item: DriverLocation;
     if (idx !== -1) {
       all[idx] = { ...all[idx], lat, lng, is_active, updated_at: new Date().toISOString() };
+      item = all[idx];
     } else {
-      all.push({ id: driverId, driver_id: driverId, lat, lng, is_active, updated_at: new Date().toISOString() });
+      item = { id: driverId, driver_id: driverId, lat, lng, is_active, updated_at: new Date().toISOString() };
+      all.push(item);
     }
     localStorage.setItem('its_locations', JSON.stringify(all));
+
+    setDoc(doc(db, 'locations', driverId), item)
+      .catch((err) => handleFirestoreError(err, OperationType.WRITE, `locations/${driverId}`));
   }
 
   // Reviews
   static getReviews(tenantId?: string): Review[] {
-    this.initialize();
     const all = JSON.parse(localStorage.getItem('its_reviews') || '[]');
     return tenantId ? all.filter((r: Review) => r.tenant_id === tenantId) : all;
   }
@@ -698,5 +876,8 @@ export class ITSLocalStorageDB {
       all.push(review);
     }
     localStorage.setItem('its_reviews', JSON.stringify(all));
+
+    setDoc(doc(db, 'reviews', review.id), review)
+      .catch((err) => handleFirestoreError(err, OperationType.WRITE, `reviews/${review.id}`));
   }
 }
