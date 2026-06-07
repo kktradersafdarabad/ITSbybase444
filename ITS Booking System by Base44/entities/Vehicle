@@ -1,0 +1,75 @@
+{
+  "name": "Vehicle",
+  "type": "object",
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "Tenant this vehicle belongs to"
+    },
+    "name": {
+      "type": "string",
+      "description": "Vehicle display name"
+    },
+    "model": {
+      "type": "string",
+      "description": "Vehicle model"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Vehicle image URL"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "sedan",
+        "suv",
+        "luxury",
+        "van",
+        "stretch_limo"
+      ],
+      "description": "Vehicle category"
+    },
+    "max_passengers": {
+      "type": "number",
+      "description": "Maximum passenger capacity"
+    },
+    "max_luggage": {
+      "type": "number",
+      "description": "Maximum luggage pieces"
+    },
+    "rate_per_km": {
+      "type": "number",
+      "description": "Rate per kilometer"
+    },
+    "rate_per_hour": {
+      "type": "number",
+      "description": "Hourly rate"
+    },
+    "base_fare": {
+      "type": "number",
+      "description": "Base fare for this vehicle"
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "Whether vehicle is available"
+    },
+    "license_plate": {
+      "type": "string",
+      "description": "License plate number"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Vehicle features like WiFi, Water, etc."
+    }
+  },
+  "required": [
+    "name",
+    "model",
+    "category",
+    "max_passengers",
+    "rate_per_km"
+  ]
+}

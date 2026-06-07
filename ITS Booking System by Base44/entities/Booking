@@ -1,0 +1,165 @@
+{
+  "name": "Booking",
+  "type": "object",
+  "properties": {
+    "booking_ref": {
+      "type": "string",
+      "description": "Unique booking reference code"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "in_progress",
+        "completed",
+        "cancelled"
+      ],
+      "description": "Booking status"
+    },
+    "booking_type": {
+      "type": "string",
+      "enum": [
+        "distance",
+        "hourly",
+        "flat_rate",
+        "on_demand"
+      ],
+      "description": "Type of booking"
+    },
+    "pickup_address": {
+      "type": "string",
+      "description": "Pickup location address"
+    },
+    "dropoff_address": {
+      "type": "string",
+      "description": "Dropoff location address"
+    },
+    "pickup_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Pickup date"
+    },
+    "pickup_time": {
+      "type": "string",
+      "description": "Pickup time"
+    },
+    "estimated_distance_km": {
+      "type": "number",
+      "description": "Estimated distance in KM"
+    },
+    "estimated_duration_min": {
+      "type": "number",
+      "description": "Estimated duration in minutes"
+    },
+    "hours_booked": {
+      "type": "number",
+      "description": "Hours booked (for hourly type)"
+    },
+    "vehicle_id": {
+      "type": "string",
+      "description": "Selected vehicle ID"
+    },
+    "vehicle_name": {
+      "type": "string",
+      "description": "Vehicle name snapshot"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Assigned driver ID"
+    },
+    "driver_name": {
+      "type": "string",
+      "description": "Driver name snapshot"
+    },
+    "passenger_name": {
+      "type": "string",
+      "description": "Passenger full name"
+    },
+    "passenger_email": {
+      "type": "string",
+      "description": "Passenger email"
+    },
+    "passenger_phone": {
+      "type": "string",
+      "description": "Passenger phone"
+    },
+    "passengers_count": {
+      "type": "number",
+      "description": "Number of passengers"
+    },
+    "luggage_count": {
+      "type": "number",
+      "description": "Number of luggage pieces"
+    },
+    "special_requests": {
+      "type": "string",
+      "description": "Any special requests"
+    },
+    "base_fare": {
+      "type": "number",
+      "description": "Base fare applied"
+    },
+    "distance_charge": {
+      "type": "number",
+      "description": "Distance-based charge"
+    },
+    "time_charge": {
+      "type": "number",
+      "description": "Time-based charge"
+    },
+    "surge_multiplier": {
+      "type": "number",
+      "description": "Surge pricing multiplier"
+    },
+    "discount_amount": {
+      "type": "number",
+      "description": "Discount applied"
+    },
+    "promo_code": {
+      "type": "string",
+      "description": "Promo code used"
+    },
+    "total_fare": {
+      "type": "number",
+      "description": "Final total fare"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "credit_card",
+        "paypal",
+        "cash"
+      ],
+      "description": "Payment method"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "refunded"
+      ],
+      "description": "Payment status"
+    },
+    "route_id": {
+      "type": "string",
+      "description": "Fixed route ID if flat rate"
+    },
+    "flight_number": {
+      "type": "string",
+      "description": "Flight number for airport transfers"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes"
+    }
+  },
+  "required": [
+    "passenger_name",
+    "passenger_email",
+    "pickup_address",
+    "pickup_date",
+    "pickup_time"
+  ]
+}

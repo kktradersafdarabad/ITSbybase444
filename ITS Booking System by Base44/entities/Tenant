@@ -1,0 +1,177 @@
+{
+  "name": "Tenant",
+  "type": "object",
+  "properties": {
+    "business_name": {
+      "type": "string",
+      "description": "Business/company name"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Owner email address"
+    },
+    "owner_name": {
+      "type": "string",
+      "description": "Owner full name"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone"
+    },
+    "slug": {
+      "type": "string",
+      "description": "Unique URL slug e.g. abc123"
+    },
+    "custom_domain": {
+      "type": "string",
+      "description": "Custom domain for this tenant"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "trial",
+        "basic",
+        "pro",
+        "enterprise"
+      ],
+      "default": "trial"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "cancelled"
+      ],
+      "default": "active"
+    },
+    "monthly_fee": {
+      "type": "number"
+    },
+    "billing_day": {
+      "type": "number"
+    },
+    "last_payment_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "next_payment_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "paid",
+        "overdue",
+        "pending"
+      ],
+      "default": "pending"
+    },
+    "stripe_publishable_key": {
+      "type": "string"
+    },
+    "stripe_secret_key": {
+      "type": "string"
+    },
+    "paypal_client_id": {
+      "type": "string"
+    },
+    "paypal_secret": {
+      "type": "string"
+    },
+    "wa_phone_id": {
+      "type": "string",
+      "description": "WhatsApp Business API Phone Number ID"
+    },
+    "wa_token": {
+      "type": "string",
+      "description": "WhatsApp Business API Access Token"
+    },
+    "primary_color": {
+      "type": "string",
+      "default": "#C91C14"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string",
+      "default": "GBP"
+    },
+    "currency_symbol": {
+      "type": "string",
+      "default": "\u00a3"
+    },
+    "country_code": {
+      "type": "string",
+      "description": "ISO 2-letter country code e.g. GB, US",
+      "default": "GB"
+    },
+    "base_fare": {
+      "type": "number",
+      "default": 3,
+      "description": "Legacy: hire charge / flag fall"
+    },
+    "flag_fall": {
+      "type": "number",
+      "default": 3.0,
+      "description": "Hire charge (flag fall) \u2014 flat fee at start of every trip"
+    },
+    "cost_per_km": {
+      "type": "number",
+      "default": 1.74,
+      "description": "Rate per km (derived from per-mile)"
+    },
+    "cost_per_mile": {
+      "type": "number",
+      "default": 2.8,
+      "description": "Rate per mile \u2014 primary UK fare unit"
+    },
+    "waiting_rate_per_min": {
+      "type": "number",
+      "default": 0.3,
+      "description": "Per-minute waiting / traffic time charge"
+    },
+    "cost_per_minute": {
+      "type": "number",
+      "default": 0.3,
+      "description": "Legacy alias for waiting_rate_per_min"
+    },
+    "hourly_rate": {
+      "type": "number",
+      "default": 55,
+      "description": "As-directed hourly rate"
+    },
+    "night_premium": {
+      "type": "number",
+      "default": 0.2,
+      "description": "Night surcharge rate (0.2 = 20% extra)"
+    },
+    "surge_multiplier": {
+      "type": "number",
+      "default": 1,
+      "description": "Peak demand multiplier"
+    },
+    "surge_start_hour": {
+      "type": "number",
+      "default": 22
+    },
+    "surge_end_hour": {
+      "type": "number",
+      "default": 5
+    },
+    "form_config": {
+      "type": "object",
+      "description": "Booking form builder config JSON"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "business_name",
+    "owner_email",
+    "slug"
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "name": "TenantBooking",
+  "type": "object",
+  "properties": {
+    "tenant_id": {
+      "type": "string"
+    },
+    "tenant_slug": {
+      "type": "string"
+    },
+    "booking_ref": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "arrived",
+        "in_progress",
+        "completed",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "booking_type": {
+      "type": "string",
+      "enum": [
+        "distance",
+        "hourly",
+        "flat_rate",
+        "on_demand"
+      ]
+    },
+    "pickup_address": {
+      "type": "string"
+    },
+    "dropoff_address": {
+      "type": "string"
+    },
+    "via_stops": {
+      "type": "string",
+      "description": "JSON array of via/intermediate stop addresses"
+    },
+    "return_trip": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether a return journey is included"
+    },
+    "pickup_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "pickup_time": {
+      "type": "string"
+    },
+    "estimated_distance_km": {
+      "type": "number"
+    },
+    "estimated_duration_min": {
+      "type": "number"
+    },
+    "hours_booked": {
+      "type": "number"
+    },
+    "vehicle_name": {
+      "type": "string"
+    },
+    "driver_name": {
+      "type": "string"
+    },
+    "driver_id": {
+      "type": "string"
+    },
+    "passenger_name": {
+      "type": "string"
+    },
+    "passenger_email": {
+      "type": "string"
+    },
+    "passenger_phone": {
+      "type": "string"
+    },
+    "passengers_count": {
+      "type": "number"
+    },
+    "luggage_count": {
+      "type": "number"
+    },
+    "special_requests": {
+      "type": "string"
+    },
+    "flight_number": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "selected_extras": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of selected extra keys (child_seat, meet_greet, etc.)"
+    },
+    "base_fare": {
+      "type": "number"
+    },
+    "distance_charge": {
+      "type": "number"
+    },
+    "time_charge": {
+      "type": "number"
+    },
+    "extras_charge": {
+      "type": "number",
+      "description": "Total cost of add-on extras"
+    },
+    "discount_amount": {
+      "type": "number"
+    },
+    "promo_code": {
+      "type": "string"
+    },
+    "total_fare": {
+      "type": "number"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "credit_card",
+        "paypal",
+        "cash"
+      ]
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "refunded"
+      ],
+      "default": "pending"
+    },
+    "payment_intent_id": {
+      "type": "string"
+    },
+    "reminder_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the 2-hour pre-ride reminder email has been sent"
+    }
+  },
+  "required": [
+    "tenant_id",
+    "passenger_name",
+    "passenger_email",
+    "pickup_address",
+    "pickup_date",
+    "pickup_time"
+  ]
+}

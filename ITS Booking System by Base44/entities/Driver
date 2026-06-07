@@ -1,0 +1,66 @@
+{
+  "name": "Driver",
+  "type": "object",
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "Tenant this driver belongs to"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "Driver's full name"
+    },
+    "email": {
+      "type": "string",
+      "description": "Driver's email"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Driver's phone number"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "Driver's photo"
+    },
+    "license_number": {
+      "type": "string",
+      "description": "Driving license number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "on_trip",
+        "offline",
+        "suspended"
+      ],
+      "description": "Current driver status"
+    },
+    "assigned_vehicle_id": {
+      "type": "string",
+      "description": "Currently assigned vehicle ID"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Average rating out of 5"
+    },
+    "total_trips": {
+      "type": "number",
+      "description": "Total completed trips"
+    },
+    "total_earnings": {
+      "type": "number",
+      "description": "Total earnings"
+    },
+    "commission_percent": {
+      "type": "number",
+      "default": 80,
+      "description": "Driver commission percentage (0-100). Default 80% goes to driver."
+    }
+  },
+  "required": [
+    "full_name",
+    "email",
+    "phone"
+  ]
+}

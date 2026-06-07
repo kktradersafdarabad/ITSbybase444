@@ -1,0 +1,58 @@
+{
+  "name": "PromoCode",
+  "type": "object",
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "Tenant this promo belongs to"
+    },
+    "code": {
+      "type": "string",
+      "description": "Promo code string (uppercase)"
+    },
+    "discount_type": {
+      "type": "string",
+      "enum": [
+        "percentage",
+        "fixed"
+      ],
+      "description": "Type of discount"
+    },
+    "discount_value": {
+      "type": "number",
+      "description": "Discount value (percentage or fixed amount)"
+    },
+    "min_booking_amount": {
+      "type": "number",
+      "description": "Minimum booking amount required to apply promo (0 = no minimum)"
+    },
+    "max_uses": {
+      "type": "number",
+      "description": "Maximum total number of uses (0 or null = unlimited)"
+    },
+    "max_uses_per_user": {
+      "type": "number",
+      "description": "Maximum uses per individual customer (0 or null = unlimited)"
+    },
+    "current_uses": {
+      "type": "number",
+      "description": "Current number of total uses",
+      "default": 0
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Expiration date (null = no expiry)"
+    },
+    "is_active": {
+      "type": "boolean",
+      "description": "Whether promo code is active",
+      "default": true
+    }
+  },
+  "required": [
+    "code",
+    "discount_type",
+    "discount_value"
+  ]
+}

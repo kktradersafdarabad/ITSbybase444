@@ -1,0 +1,33 @@
+{
+  "name": "DriverLocation",
+  "type": "object",
+  "properties": {
+    "driver_id": {
+      "type": "string"
+    },
+    "booking_id": {
+      "type": "string"
+    },
+    "tenant_slug": {
+      "type": "string"
+    },
+    "lat": {
+      "type": "number"
+    },
+    "lng": {
+      "type": "number"
+    },
+    "heading": {
+      "type": "number"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "driver_id",
+    "lat",
+    "lng"
+  ]
+}

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="https://base44.com/logo_v2.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#d4a017" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Driver App" />
+    <title>ITS Driver Portal</title>
+    <script>
+      // Load Google Maps API with Places, Directions, Geometry libraries
+      (function() {
+        var script = document.createElement('script');
+        script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyAiVGW9ooD0RfDPp0EGO-_WxgQogt-KTzM&libraries=places,geometry,directions';
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <style>
+      /* Hide "Edit with Base44" badge on all pages */
+      [data-base44-badge],
+      iframe[src*="base44"],
+      a[href*="base44.com"][style*="position: fixed"],
+      div[style*="position: fixed"][style*="z-index: 9999"] a[href*="base44"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+    </style>
+  </body>
+</html>

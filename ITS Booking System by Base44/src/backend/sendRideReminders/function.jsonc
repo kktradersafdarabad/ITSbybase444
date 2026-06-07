@@ -1,0 +1,14 @@
+{
+  "name": "sendRideReminders",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "ride_reminder_check",
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 30
+    }
+  ]
+}
