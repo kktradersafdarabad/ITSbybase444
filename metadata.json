@@ -1,0 +1,6 @@
+{
+  "name": "ITS Booking Tracker",
+  "description": "Intelligent Transportation System (ITS) Booking & Shipment Tracking Portal with carrier comparison and live tracking simulation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
